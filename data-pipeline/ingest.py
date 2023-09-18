@@ -5,25 +5,27 @@ import logging
 import pandas as pd
 
 
-GITHUB_REPOSITORY="langchain-ai/langchain"
-GITHUB_LABEL="langchain"
-STORE_PATH="data-pipeline"
+GITHUB_REPOSITORY = "langchain-ai/langchain"
+GITHUB_LABEL = "langchain"
+STORE_PATH = "data-pipeline"
+
 
 def load_environment_vars() -> dict:
     """Load required environment variables. Raise an exception if any are missing."""
-    
+
     load_dotenv()
     github_token = os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")
-    
+
     if not github_token:
-        raise EnvironmentError("GITHUB_PERSONAL_ACCESS_TOKEN environment variable not set.")
+        raise EnvironmentError(
+            "GITHUB_PERSONAL_ACCESS_TOKEN environment variable not set.")
 
     logging.info("Environment variables loaded.")
     return {"GITHUB_TOKEN": github_token}
 
 
 def initialize_github_loader(repo: str) -> GitHubIssuesLoader:
-    """Init GitHubIssuesLoader."""	
+    """Init GitHubIssuesLoader."""
 
     logging.info(f"Initializing GitHubIssuesLoader for repo: {repo}")
     loader = GitHubIssuesLoader(
@@ -51,7 +53,8 @@ def store_as_json(df: pd.DataFrame, label: str, path: str):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+    logging.basicConfig(level=logging.INFO,
+                        format="%(asctime)s [%(levelname)s] %(message)s")
 
     try:
         env_vars = load_environment_vars()
