@@ -31,6 +31,7 @@ def initialize_github_loader(repo: str) -> GitHubIssuesLoader:
     loader = GitHubIssuesLoader(
         repo=repo,
         include_prs=False,
+        creator="RoderickVM",
     )
     return loader
 
@@ -40,16 +41,27 @@ def fetch_as_df(loader: GitHubIssuesLoader) -> pd.DataFrame:
 
     logging.info(f"Fetching 'issues' from Github: '{loader.repo}'")
     docs = loader.load()
-    df = pd.DataFrame.from_records(docs)
+
+    df = pd.DataFrame()
+    for doc in docs:
+        description = doc.page_content
+        metadata = doc.metadata
+        
+        row = pd.DataFrame([ {'description': description, **metadata} ])
+        df = pd.concat([df, row], ignore_index=True)
+
+    logging.info(f"Fetched {len(df)} 'issues' from Github: '{loader.repo}'")
+    logging.info(f"Dataframe Columns: {df.columns}")
+
     return df
 
 
-def store_as_json(df: pd.DataFrame, label: str, path: str):
+def store_as_pickle(df: pd.DataFrame, label: str, path: str):
     """Store DataFrame as json to local file system"""
-    file_name = f"{label}-github-issues-{pd.Timestamp.today().strftime('%Y-%m-%d')}.jsonl"
+    file_name = f"{label}-github-issues-{pd.Timestamp.today().strftime('%Y-%m-%d')}.pkl"
 
     logging.info(f"Storing 'issues' to '{path}/{file_name}'")
-    df.to_json(f"{path}/{file_name}", orient="records", lines=True)
+    df.to_pickle(f"{path}/{file_name}")
 
 
 if __name__ == "__main__":
@@ -61,7 +73,7 @@ if __name__ == "__main__":
 
         loader = initialize_github_loader(GITHUB_REPOSITORY)
         df = fetch_as_df(loader)
-        store_as_json(df, label=GITHUB_LABEL, path=STORE_PATH)
+        store_as_pickle(df, label=GITHUB_LABEL, path=STORE_PATH)
     except EnvironmentError as ee:
         logging.error(f"Environment Error: {ee}")
         raise
