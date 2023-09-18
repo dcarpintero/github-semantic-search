@@ -73,4 +73,4 @@ with st.sidebar.expander("🔧 WEAVIATE-SETTINGS", expanded=True):
 query = st.text_input("Search in 'langchain-ai/langchain'", '')
 if query:
     df = search_github_issues(w_client, query, max_results)
-    st.dataframe(df[["title", "labels"]], width=2000, hide_index=True)
+    st.dataframe(df, hide_index=True)
