@@ -9,11 +9,11 @@ def load_environment_vars() -> dict:
     """Load required environment variables. Raise an exception if any are missing."""
     
     load_dotenv()
-    openapi_key = os.getenv("OPENAI_API_KEY")
+    openai_api_key = os.getenv("OPENAI_API_KEY")
     weaviate_url = os.getenv("WEAVIATE_URL")
     weaviate_api_key = os.getenv("WEAVIATE_API_KEY")
     
-    if not openapi_key:
+    if not openai_api_key:
         raise EnvironmentError("OPENAI_API_KEY environment variable not set.")
     
     if not weaviate_url:
@@ -23,10 +23,10 @@ def load_environment_vars() -> dict:
         raise EnvironmentError("WEAVIATE_API_KEY environment variable not set.")
 
     logging.info("Environment variables loaded.")
-    return {"OPENAI_API_KEY": openapi_key, "WEAVIATE_URL": weaviate_url, "WEAVIATE_API_KEY": weaviate_api_key}
+    return {"OPENAI_API_KEY": openai_api_key, "WEAVIATE_URL": weaviate_url, "WEAVIATE_API_KEY": weaviate_api_key}
 
 
-def index_data(openapi_key: str, weaviate_url: str, weaviate_api_key: str):
+def index_data(openai_api_key: str, weaviate_url: str, weaviate_api_key: str):
     """Index Data into Weaviate"""
     file_name = "./data-pipeline/langchain-github-issues-2023-09-18.pkl"
 
@@ -37,7 +37,7 @@ def index_data(openapi_key: str, weaviate_url: str, weaviate_api_key: str):
     client = weaviate.Client(
         url=weaviate_url,
         auth_client_secret=weaviate.AuthApiKey(api_key=weaviate_api_key), 
-        additional_headers={"X-OpenAI-Api-Key": openapi_key})
+        additional_headers={"X-OpenAI-Api-Key": openai_api_key})
     
     logging.info(f"Creating 'GituHubIssue' schema in Weaviate: '{weaviate_url}'")
     client.schema.delete_class("GitHubIssue")
