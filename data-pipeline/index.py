@@ -41,8 +41,19 @@ def index_data(openai_api_key: str, weaviate_url: str, weaviate_api_key: str):
     
     logging.info(f"Creating 'GituHubIssue' schema in Weaviate: '{weaviate_url}'")
     client.schema.delete_class("GitHubIssue")
+
+    """
+    Weaviate generates vector embeddings at the object level (rather than for individual properties).
+    text2vec-* modules  generate vectors from text objects. 
+    It vectorizes only properties that use the text data type (unless skipped)
+
+    See: https://weaviate.io/developers/weaviate/config-refs/schema#vectorizer 
+    """
+
     class_obj = {
         "class": "GitHubIssue",
+        "description": "This class contains GitHub Issues from the langchain repository.",
+        "vectorIndexType": "hnsw",
         "vectorizer": "text2vec-openai",
         "moduleConfig": {
             "text2vec-openai": {
@@ -50,20 +61,53 @@ def index_data(openai_api_key: str, weaviate_url: str, weaviate_api_key: str):
                 "modelVersion": "002",
                 "type": "text"
             }
-        }
+        },
+        "properties": [
+            {
+                "name": "title",
+                "dataType": ["text"]
+            },
+            {
+                "name": "url",
+                "dataType": ["text"],
+                "indexFilterable": False,  
+                "indexSearchable": False,
+                "vectorizePropertyName": False
+            },
+            {
+                "name": "description",
+                "dataType": ["text"]
+            },
+            {
+                "name": "creator",
+                "dataType": ["text"],
+            },
+            {
+                "name": "created_at",
+                "dataType": ["date"]
+            },
+            {
+                "name": "state",
+                "dataType": ["text"],
+            },
+        ]
     }
     client.schema.create_class(class_obj)
 
     logging.info(f"Importing data to Weaviate: '{weaviate_url}'")
+
     try:
         with client.batch as batch: 
-            batch.batch_size = 50
+            batch.batch_size = 100
             for item in df.itertuples():
                 properties = {
                     "title": item.title,
                     "url": item.url,
                     "labels": item.labels,
                     "description": item.description,
+                    "creator": item.creator,
+                    "created_at": item.created_at,
+                    "state": item.state,
                 }
 
                 batch.add_data_object(
