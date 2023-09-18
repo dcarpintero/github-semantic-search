@@ -1,11 +1,9 @@
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Weaviate
-from dotenv import load_dotenv
-import os
-import logging
 import pandas as pd
 import weaviate
-import json
+import logging
+import os
+
+from dotenv import load_dotenv
 
 def load_environment_vars() -> dict:
     """Load required environment variables. Raise an exception if any are missing."""

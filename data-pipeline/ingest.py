@@ -1,8 +1,10 @@
-from langchain.document_loaders import GitHubIssuesLoader
-from dotenv import load_dotenv
+import pandas as pd
 import os
 import logging
-import pandas as pd
+
+from langchain.document_loaders import GitHubIssuesLoader
+from dotenv import load_dotenv
+
 
 
 GITHUB_REPOSITORY = "langchain-ai/langchain"
