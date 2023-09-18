@@ -31,7 +31,6 @@ def initialize_github_loader(repo: str) -> GitHubIssuesLoader:
     loader = GitHubIssuesLoader(
         repo=repo,
         include_prs=False,
-        creator="RoderickVM",
     )
     return loader
 
