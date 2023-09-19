@@ -22,20 +22,21 @@ from typing import Optional
 
 def load_environment_vars() -> dict:
     """Load required environment variables. Raise an exception if any are missing."""
-    
+
     load_dotenv()
     openapi_key = os.getenv("OPENAI_API_KEY")
     weaviate_url = os.getenv("WEAVIATE_URL")
     weaviate_api_key = os.getenv("WEAVIATE_API_KEY")
-    
+
     if not openapi_key:
         raise EnvironmentError("OPENAI_API_KEY environment variable not set.")
-    
+
     if not weaviate_url:
         raise EnvironmentError("WEAVIATE_URL environment variable not set.")
-    
+
     if not weaviate_api_key:
-        raise EnvironmentError("WEAVIATE_API_KEY environment variable not set.")
+        raise EnvironmentError(
+            "WEAVIATE_API_KEY environment variable not set.")
 
     logging.info("Environment variables loaded.")
     return {"OPENAI_API_KEY": openapi_key, "WEAVIATE_URL": weaviate_url, "WEAVIATE_API_KEY": weaviate_api_key}
@@ -47,9 +48,9 @@ def weaviate_client(openai_key: str, weaviate_url: str, weaviate_api_key: str):
     logging.info(f"Initializing Weaviate Client: '{weaviate_url}'")
     client = weaviate.Client(
         url=weaviate_url,
-        auth_client_secret=weaviate.AuthApiKey(api_key=weaviate_api_key), 
+        auth_client_secret=weaviate.AuthApiKey(api_key=weaviate_api_key),
         additional_headers={"X-OpenAI-Api-Key": openai_key})
-    
+
     return client
 
 
@@ -69,7 +70,8 @@ def query_with_near_text(_w_client: weaviate.Client, query, max_results=10) -> p
     )
 
     data = response["data"]["Get"]["GitHubIssue"]
-    return  pd.DataFrame.from_dict(data, orient='columns')
+    return pd.DataFrame.from_dict(data, orient='columns')
+
 
 @st.cache_data
 def query_with_bm25(_w_client: weaviate.Client, query, max_results=10) -> pd.DataFrame:
@@ -89,7 +91,7 @@ def query_with_bm25(_w_client: weaviate.Client, query, max_results=10) -> pd.Dat
     )
 
     data = response["data"]["Get"]["GitHubIssue"]
-    return  pd.DataFrame.from_dict(data, orient='columns')
+    return pd.DataFrame.from_dict(data, orient='columns')
 
 
 @st.cache_data
@@ -110,7 +112,8 @@ def query_with_hybrid(_w_client: weaviate.Client, query, max_results=10) -> pd.D
     )
 
     data = response["data"]["Get"]["GitHubIssue"]
-    return  pd.DataFrame.from_dict(data, orient='columns')
+    return pd.DataFrame.from_dict(data, orient='columns')
+
 
 def onchange_with_near_text():
     if st.session_state.with_near_text:
@@ -136,25 +139,32 @@ def format_date(date_string: str) -> Optional[str]:
     except:
         return None
     return date.strftime('%d %B %Y')
-    
+
 
 env_vars = load_environment_vars()
-w_client = weaviate_client(env_vars["OPENAI_API_KEY"], env_vars["WEAVIATE_URL"], env_vars["WEAVIATE_API_KEY"])
+w_client = weaviate_client(
+    env_vars["OPENAI_API_KEY"], env_vars["WEAVIATE_URL"], env_vars["WEAVIATE_API_KEY"])
 
 st.header("🦜 Semantic Search on Langchain Issues 🔍")
 
 with st.sidebar.expander("🐙 GITHUB-REPOSITORY", expanded=True):
-    st.text_input(label='GITHUB-REPOSITORY', key='github_repo', label_visibility='hidden', value='langchain-ai/langchain', disabled=True)
+    st.text_input(label='GITHUB-REPOSITORY', key='github_repo',
+                  label_visibility='hidden', value='langchain-ai/langchain', disabled=True)
 
 with st.sidebar.expander("🔧 WEAVIATE-SETTINGS", expanded=True):
-    st.toggle('Near Text Search', key="with_near_text", on_change=onchange_with_near_text)
+    st.toggle('Near Text Search', key="with_near_text",
+              on_change=onchange_with_near_text)
     st.toggle('BM25 Search', key="with_bm25", on_change=onchange_with_bm25)
-    st.toggle('Hybrid Search',  key="with_hybrid", on_change=onchange_with_hybrid)
+    st.toggle('Hybrid Search',  key="with_hybrid",
+              on_change=onchange_with_hybrid)
 
 with st.sidebar.expander("🔍 SEARCH-RESULTS", expanded=True):
-    bm25_score = st.slider('BM25 Score', min_value=1.0, max_value=4.0, value=1.9, step=0.1)    
-    hybrid_score = st.slider('Hybrid Score (Scaled)', min_value=1.0, max_value=3.0, value=1.1, step=0.05)    
-    max_results = st.slider('Max Results', min_value=0, max_value=100, value=10, step=1)
+    bm25_score = st.slider('BM25 Score', min_value=1.0,
+                           max_value=4.0, value=1.9, step=0.1)
+    hybrid_score = st.slider('Hybrid Score (Scaled)',
+                             min_value=1.0, max_value=3.0, value=1.1, step=0.05)
+    max_results = st.slider('Max Results', min_value=0,
+                            max_value=100, value=10, step=1)
 
 with st.sidebar:
     "[![Weaviate Docs](https://img.shields.io/badge/Weaviate%20Docs-gray)](https://weaviate.io/developers/weaviate)"
@@ -199,12 +209,9 @@ if query:
                 createdAt = format_date(issue["created_at"])
 
                 st.markdown(f'[{title}]({url}) ({createdAt})')
-    
+
     with tab_raw:
         if df is None:
             st.info("No GitHub Issues found.")
         else:
             st.dataframe(df, hide_index=True)
-
-
-    

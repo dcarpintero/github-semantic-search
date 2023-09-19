@@ -5,22 +5,24 @@ import os
 
 from dotenv import load_dotenv
 
+
 def load_environment_vars() -> dict:
     """Load required environment variables. Raise an exception if any are missing."""
-    
+
     load_dotenv()
     openai_api_key = os.getenv("OPENAI_API_KEY")
     weaviate_url = os.getenv("WEAVIATE_URL")
     weaviate_api_key = os.getenv("WEAVIATE_API_KEY")
-    
+
     if not openai_api_key:
         raise EnvironmentError("OPENAI_API_KEY environment variable not set.")
-    
+
     if not weaviate_url:
         raise EnvironmentError("WEAVIATE_URL environment variable not set.")
-    
+
     if not weaviate_api_key:
-        raise EnvironmentError("WEAVIATE_API_KEY environment variable not set.")
+        raise EnvironmentError(
+            "WEAVIATE_API_KEY environment variable not set.")
 
     logging.info("Environment variables loaded.")
     return {"OPENAI_API_KEY": openai_api_key, "WEAVIATE_URL": weaviate_url, "WEAVIATE_API_KEY": weaviate_api_key}
@@ -36,10 +38,11 @@ def index_data(openai_api_key: str, weaviate_url: str, weaviate_api_key: str):
     logging.info(f"Initializing Weaviate Client: '{weaviate_url}'")
     client = weaviate.Client(
         url=weaviate_url,
-        auth_client_secret=weaviate.AuthApiKey(api_key=weaviate_api_key), 
+        auth_client_secret=weaviate.AuthApiKey(api_key=weaviate_api_key),
         additional_headers={"X-OpenAI-Api-Key": openai_api_key})
-    
-    logging.info(f"Creating 'GituHubIssue' schema in Weaviate: '{weaviate_url}'")
+
+    logging.info(
+        f"Creating 'GituHubIssue' schema in Weaviate: '{weaviate_url}'")
     client.schema.delete_class("GitHubIssue")
 
     """
@@ -70,7 +73,7 @@ def index_data(openai_api_key: str, weaviate_url: str, weaviate_api_key: str):
             {
                 "name": "url",
                 "dataType": ["text"],
-                "indexFilterable": False,  
+                "indexFilterable": False,
                 "indexSearchable": False,
                 "vectorizePropertyName": False
             },
@@ -97,7 +100,7 @@ def index_data(openai_api_key: str, weaviate_url: str, weaviate_api_key: str):
     logging.info(f"Importing data to Weaviate: '{weaviate_url}'")
 
     try:
-        with client.batch as batch: 
+        with client.batch as batch:
             batch.batch_size = 100
             for item in df.itertuples():
                 properties = {
@@ -111,18 +114,21 @@ def index_data(openai_api_key: str, weaviate_url: str, weaviate_api_key: str):
                 }
 
                 batch.add_data_object(
-                    data_object=properties, 
+                    data_object=properties,
                     class_name="GitHubIssue")
     except Exception as ex:
         logging.error(f"Unexpected Error: {ex}")
         raise
 
+
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+    logging.basicConfig(level=logging.INFO,
+                        format="%(asctime)s [%(levelname)s] %(message)s")
 
     try:
         env_vars = load_environment_vars()
-        index_data(env_vars["OPENAI_API_KEY"], env_vars["WEAVIATE_URL"], env_vars["WEAVIATE_API_KEY"])
+        index_data(env_vars["OPENAI_API_KEY"],
+                   env_vars["WEAVIATE_URL"], env_vars["WEAVIATE_API_KEY"])
     except EnvironmentError as ee:
         logging.error(f"Environment Error: {ee}")
         raise

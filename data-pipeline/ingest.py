@@ -46,8 +46,8 @@ def fetch_as_df(loader: GitHubIssuesLoader) -> pd.DataFrame:
     for doc in docs:
         description = doc.page_content
         metadata = doc.metadata
-        
-        row = pd.DataFrame([ {'description': description, **metadata} ])
+
+        row = pd.DataFrame([{'description': description, **metadata}])
         df = pd.concat([df, row], ignore_index=True)
 
     logging.info(f"Fetched {len(df)} 'issues' from Github: '{loader.repo}'")
