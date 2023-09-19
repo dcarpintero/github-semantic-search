@@ -16,6 +16,8 @@ import logging
 import os
 
 from dotenv import load_dotenv
+from datetime import datetime
+from typing import Optional
 
 
 def load_environment_vars() -> dict:
@@ -63,7 +65,6 @@ def query_with_near_text(_w_client: weaviate.Client, query, max_results=10) -> p
         .get("GitHubIssue", ["title", "url", "labels", "description", "created_at", "state"])
         .with_near_text({"concepts": [query]})
         .with_limit(max_results)
-        .with_additional("score")
         .do()
     )
 
@@ -127,6 +128,14 @@ def onchange_with_hybrid():
     if st.session_state.with_hybrid:
         st.session_state.with_near_text = False
         st.session_state.with_bm25 = False
+
+
+def format_date(date_string: str) -> Optional[str]:
+    try:
+        date = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
+    except:
+        return None
+    return date.strftime('%d %B %Y')
     
 
 env_vars = load_environment_vars()
@@ -160,5 +169,26 @@ if query:
         st.info("ℹ️ Select your preferred Search Mode (Near Text, BM25 or Hybrid)!")
         st.stop()
 
-    st.dataframe(df, hide_index=True)
+    tab_list, tab_raw = st.tabs(
+        [f'Issues with "{query}"', "Raw"])
 
+    with tab_list:
+        if df is None:
+            st.info("No GitHub Issues found.")
+        else:
+            for i in range(1, len(df)):
+                issue = df.iloc[i]
+
+                title = issue["title"]
+                url = issue["url"]
+                createdAt = format_date(issue["created_at"])
+
+                st.markdown(f'[{title}]({url}) ({createdAt})')
+    
+    with tab_raw:
+        if df is None:
+            st.info("No GitHub Issues found.")
+        else:
+            st.dataframe(df, hide_index=True)
+
+    
