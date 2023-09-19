@@ -15,11 +15,9 @@
 
 ## 📋 How does it work?
 
-- **Ingesting Github Issues**: We use the [Langchain Github Loader](https://js.langchain.com/docs/modules/data_connection/document_loaders/integrations/web_loaders/github)  to connect to the [Langchain Repository](http://github.com/langchain-ai/langchain) and fetch the GitHub issues (nearly 2.000), which are then converted to a pandas dataframe and store in a pickle file.
+- **Ingesting Github Issues**: We use the [Langchain Github Loader](https://js.langchain.com/docs/modules/data_connection/document_loaders/integrations/web_loaders/github)  to connect to the [Langchain Repository](http://github.com/langchain-ai/langchain) and fetch the GitHub issues (nearly 2.000), which are then converted to a pandas dataframe and stored in a pickle file. See [./data-pipeline/ingest.py](./data-pipeline/ingest.py).
 
-See [./data-pipeline/ingest.py](./data-pipeline/ingest.py)
-
-- **Generate and Index Vector Embeddings with Weaviate**: Weaviate generates vector embeddings at the object level (rather than for individual properties), it includes by default properties that use the text data type, in our case we skip the 'url' field (which will be also not filterable and not searchable) and set up the 'text2vec-openai'vectorizer. 
+- **Generate and Index Vector Embeddings with Weaviate**: Weaviate generates vector embeddings at the object level (rather than for individual properties), it includes by default properties that use the text data type, in our case we skip the 'url' field (which will be also not filterable and not searchable) and set up the 'text2vec-openai' vectorizer. Given that our use case values fast queries over loading time, we have opted for the [HNSW](https://arxiv.org/abs/1603.09320) vector index type, which incrementally builds a multi-layer structure consisting from hierarchical set of proximity graphs (layers).
 
 ```python
 class_obj = {
@@ -88,6 +86,7 @@ with client.batch as batch:
 ```
 
 - **Searching with Weaviate**: Our App supports:
+
 [Near-Text-Vector-Search](https://weaviate.io/developers/weaviate/search/similarity):
 
 ```python
