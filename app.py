@@ -4,6 +4,10 @@ It supports the following search modes:
 - Near Text
 - BM25
 - Hybrid
+The user's OpenAI API key is used to generate vector embeddings for the search query.
+
+Author:
+    @dcarpintero : https://github.com/dcarpintero
 """
 import streamlit as st
 import pandas as pd
@@ -107,6 +111,23 @@ def query_with_hybrid(_w_client: weaviate.Client, query, max_results=10) -> pd.D
     data = response["data"]["Get"]["GitHubIssue"]
     return  pd.DataFrame.from_dict(data, orient='columns')
 
+def onchange_with_near_text():
+    if st.session_state.with_near_text:
+        st.session_state.with_bm25 = False
+        st.session_state.with_hybrid = False
+
+
+def onchange_with_bm25():
+    if st.session_state.with_bm25:
+        st.session_state.with_near_text = False
+        st.session_state.with_hybrid = False
+
+
+def onchange_with_hybrid():
+    if st.session_state.with_hybrid:
+        st.session_state.with_near_text = False
+        st.session_state.with_bm25 = False
+    
 
 env_vars = load_environment_vars()
 w_client = weaviate_client(env_vars["OPENAI_API_KEY"], env_vars["WEAVIATE_URL"], env_vars["WEAVIATE_API_KEY"])
@@ -117,10 +138,27 @@ with st.sidebar.expander("🐙 GITHUB-REPOSITORY", expanded=True):
     st.text_input(label='GITHUB-REPOSITORY', key='github_repo', label_visibility='hidden', value='langchain-ai/langchain', disabled=True)
 
 with st.sidebar.expander("🔧 WEAVIATE-SETTINGS", expanded=True):
-     max_results = st.sidebar.slider('Max Results', min_value=0, max_value=100, value=2, step=1)
-
+    st.toggle('Near Text Search', key="with_near_text", on_change=onchange_with_near_text)
+    st.toggle('BM25 Search', key="with_bm25", on_change=onchange_with_bm25)
+    st.toggle('Hybrid Search',  key="with_hybrid", on_change=onchange_with_hybrid)
+    
+max_results = st.sidebar.slider('Max Results', min_value=0, max_value=100, value=10, step=1)
 
 query = st.text_input("Search in 'langchain-ai/langchain'", '')
+
 if query:
-    df = query_with_near_text(w_client, query, max_results)
+    if st.session_state.with_near_text:
+        st.subheader("Near Text Search")
+        df = query_with_near_text(w_client, query, max_results)
+    elif st.session_state.with_bm25:
+        st.subheader("BM25 Search")
+        df = query_with_bm25(w_client, query, max_results)
+    elif st.session_state.with_hybrid:
+        st.subheader("Hybrid Search")
+        df = query_with_hybrid(w_client, query, max_results)
+    else:
+        st.info("ℹ️ Select your preferred Search Mode (Near Text, BM25 or Hybrid)!")
+        st.stop()
+
     st.dataframe(df, hide_index=True)
+
