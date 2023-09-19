@@ -141,7 +141,7 @@ def format_date(date_string: str) -> Optional[str]:
 env_vars = load_environment_vars()
 w_client = weaviate_client(env_vars["OPENAI_API_KEY"], env_vars["WEAVIATE_URL"], env_vars["WEAVIATE_API_KEY"])
 
-st.header("🦜 Github Semantic Search with Weviate 🔍")
+st.header("🦜 Semantic Search on Langchain Issues 🔍")
 
 with st.sidebar.expander("🐙 GITHUB-REPOSITORY", expanded=True):
     st.text_input(label='GITHUB-REPOSITORY', key='github_repo', label_visibility='hidden', value='langchain-ai/langchain', disabled=True)
