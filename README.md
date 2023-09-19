@@ -21,7 +21,7 @@ See [./data-pipeline/ingest.py](./data-pipeline/ingest.py)
 
 - **Generate and Index Vector Embeddings with Weaviate**: Weaviate generates vector embeddings at the object level (rather than for individual properties), it includes by default properties that use the text data type, in our case we skip the 'url' field (which will be also not filterable and not searchable) and set up the 'text2vec-openai'vectorizer. 
 
-```json
+```python
 class_obj = {
         "class": "GitHubIssue",
         "description": "This class contains GitHub Issues from the langchain repository.",
@@ -88,7 +88,7 @@ with client.batch as batch:
 ```
 
 - **Searching with Weaviate**: Our App supports:
-- [Near-Text-Vector-Search](https://weaviate.io/developers/weaviate/search/similarity)
+[Near-Text-Vector-Search](https://weaviate.io/developers/weaviate/search/similarity):
 
 ```python
 @st.cache_data
@@ -110,7 +110,7 @@ def query_with_near_text(_w_client: weaviate.Client, query, max_results=10) -> p
     return  pd.DataFrame.from_dict(data, orient='columns')
 ```
 
-- [BM25-Search](https://weaviate.io/developers/weaviate/search/bm25)
+[BM25-Search](https://weaviate.io/developers/weaviate/search/bm25):
 
 ```python
 @st.cache_data
@@ -134,7 +134,7 @@ def query_with_bm25(_w_client: weaviate.Client, query, max_results=10) -> pd.Dat
     return  pd.DataFrame.from_dict(data, orient='columns')
 ```
 
-- [Hybrid-Search](https://weaviate.io/developers/weaviate/search/hybrid)
+[Hybrid-Search](https://weaviate.io/developers/weaviate/search/hybrid):
 
 ```python
 @st.cache_data
