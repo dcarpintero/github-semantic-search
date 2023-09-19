@@ -150,8 +150,14 @@ with st.sidebar.expander("🔧 WEAVIATE-SETTINGS", expanded=True):
     st.toggle('Near Text Search', key="with_near_text", on_change=onchange_with_near_text)
     st.toggle('BM25 Search', key="with_bm25", on_change=onchange_with_bm25)
     st.toggle('Hybrid Search',  key="with_hybrid", on_change=onchange_with_hybrid)
-    
-max_results = st.sidebar.slider('Max Results', min_value=0, max_value=100, value=10, step=1)
+
+with st.sidebar.expander("🔍 SEARCH-RESULTS", expanded=True):
+    bm25_score = st.slider('BM25 Score', min_value=1.0, max_value=4.0, value=1.9, step=0.1)    
+    hybrid_score = st.slider('Hybrid Score (Scaled)', min_value=1.0, max_value=3.0, value=1.1, step=0.05)    
+    max_results = st.slider('Max Results', min_value=0, max_value=100, value=10, step=1)
+
+with st.sidebar:
+    "[![Weaviate Docs](https://img.shields.io/badge/Weaviate%20Docs-gray)](https://weaviate.io/developers/weaviate)"
 
 query = st.text_input("Search in 'langchain-ai/langchain'", '')
 
@@ -179,6 +185,15 @@ if query:
             for i in range(1, len(df)):
                 issue = df.iloc[i]
 
+                if st.session_state.with_bm25:
+                    score = issue["_additional"]["score"]
+                    if float(score) < bm25_score:
+                        break
+                elif st.session_state.with_hybrid:
+                    score = issue["_additional"]["score"]
+                    if float(score) * 100 < hybrid_score:
+                        break
+
                 title = issue["title"]
                 url = issue["url"]
                 createdAt = format_date(issue["created_at"])
@@ -190,5 +205,6 @@ if query:
             st.info("No GitHub Issues found.")
         else:
             st.dataframe(df, hide_index=True)
+
 
     
