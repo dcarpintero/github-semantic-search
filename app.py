@@ -1,4 +1,9 @@
 """
+Streamlit app for GitHub Semantic Search with Weaviate.
+It supports the following search modes:
+- Near Text
+- BM25
+- Hybrid
 """
 import streamlit as st
 import pandas as pd
@@ -43,14 +48,59 @@ def weaviate_client(openai_key: str, weaviate_url: str, weaviate_api_key: str):
 
 
 @st.cache_data
-def search_github_issues(_w_client: weaviate.Client, query, max_results=10) -> pd.DataFrame:
-    """Search GitHub Issues in Weaviate."""
+def query_with_near_text(_w_client: weaviate.Client, query, max_results=10) -> pd.DataFrame:
+    """
+    Search GitHub Issues in Weaviate with Near Text.
+    Weaviate converts the input query into a vector through the inference API (OpenAI) and uses that vector as the basis for a vector search.
+    """
 
     response = (
         _w_client.query
-        .get("GitHubIssue", ["title", "labels", "description"])
+        .get("GitHubIssue", ["title", "url", "labels", "description", "created_at", "state"])
         .with_near_text({"concepts": [query]})
         .with_limit(max_results)
+        .with_additional("score")
+        .do()
+    )
+
+    data = response["data"]["Get"]["GitHubIssue"]
+    return  pd.DataFrame.from_dict(data, orient='columns')
+
+@st.cache_data
+def query_with_bm25(_w_client: weaviate.Client, query, max_results=10) -> pd.DataFrame:
+    """
+    Search GitHub Issues in Weaviate with BM25.
+    Keyword (also called a sparse vector search) search that looks for objects that contain the search terms in their properties according to 
+    the selected tokenization. The results are scored according to the BM25F function. It is .
+    """
+
+    response = (
+        _w_client.query
+        .get("GitHubIssue", ["title", "url", "labels", "description", "created_at", "state"])
+        .with_bm25(query=query)
+        .with_limit(max_results)
+        .with_additional("score")
+        .do()
+    )
+
+    data = response["data"]["Get"]["GitHubIssue"]
+    return  pd.DataFrame.from_dict(data, orient='columns')
+
+
+@st.cache_data
+def query_with_hybrid(_w_client: weaviate.Client, query, max_results=10) -> pd.DataFrame:
+    """
+    Search GitHub Issues in Weaviate with BM25.
+    Keyword (also called a sparse vector search) search that looks for objects that contain the search terms in their properties according to 
+    the selected tokenization. The results are scored according to the BM25F function. It is .
+    """
+
+    response = (
+        _w_client.query
+        .get("GitHubIssue", ["title", "url", "labels", "description", "created_at", "state"])
+        .with_hybrid(query=query)
+        .with_limit(max_results)
+        .with_additional(["score"])
         .do()
     )
 
@@ -72,5 +122,5 @@ with st.sidebar.expander("🔧 WEAVIATE-SETTINGS", expanded=True):
 
 query = st.text_input("Search in 'langchain-ai/langchain'", '')
 if query:
-    df = search_github_issues(w_client, query, max_results)
+    df = query_with_near_text(w_client, query, max_results)
     st.dataframe(df, hide_index=True)
