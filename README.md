@@ -1,4 +1,4 @@
-[![Open_inStreamlit](https://img.shields.io/badge/Open%20In-Streamlit-red?logo=Streamlit)](https://github-semantic-search.streamlit.app/)
+[![Open_inStreamlit](https://img.shields.io/badge/Open%20In-Streamlit-red?logo=Streamlit)](https://gh-semantic-search.streamlit.app/)
 [![Python](https://img.shields.io/badge/python-%203.8-blue.svg)](https://www.python.org/)
 [![CodeFactor](https://www.codefactor.io/repository/github/dcarpintero/github-semantic-search/badge)](https://www.codefactor.io/repository/github/dcarpintero/github-semantic-search)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](https://github.com/dcarpintero/st-newsapi-connector/blob/main/LICENSE)
@@ -199,7 +199,7 @@ streamlit run ./app.py
 
 ## 👩‍💻 Streamlit Web App
 
-Demo Web App deployed to [Streamlit Cloud](https://streamlit.io/cloud) and available at https://github-semantic-search.streamlit.app/ 
+Demo Web App deployed to [Streamlit Cloud](https://streamlit.io/cloud) and available at https://gh-semantic-search.streamlit.app/ 
 
 ## 📚 References
 
